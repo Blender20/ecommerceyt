@@ -1,7 +1,7 @@
 {
   "name": "admin",
   "version": "1.0.0",
-  "description": "Admin data backup for ecommerpro app",
+  "description": "Admin data backup for hippo labels LLC",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -18,5 +18,8 @@
     "fs": "^0.0.1-security",
     "stripe": "^15.10.0",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
