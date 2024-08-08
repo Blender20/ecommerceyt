@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useLoaderData } from "react-router-dom";
 import BannerCategories from "./ui/BannerCategories";
 import Blog from "./ui/Blog";
 import Categories from "./ui/Categories";
@@ -7,13 +6,37 @@ import DiscountBanner from "./ui/DiscountBanner";
 import Highlights from "./ui/Highlights";
 import HomeBanner from "./ui/HomeBanner";
 import ProductList from "./ui/ProductList";
+import { collection, getDocs } from 'firebase/firestore';
+import { ProductProps } from "../type";
+import { db } from "./lib/firebase";
 
 function App() {
-  const [products, setProducts] = useState([]);
-  const data: any = useLoaderData();
+  const [products, setProducts] = useState<ProductProps[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    setProducts(data?.data);
-  }, [data]);
+    const fetchProducts = async () => {
+      try {
+        const productsCol = collection(db, "Products");
+        const productSnapshot = await getDocs(productsCol);
+        const productsList = productSnapshot.docs.map((doc) => ({
+          ...(doc.data() as ProductProps),
+          id: doc.id,
+        }));
+        setProducts(productsList);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts(); 
+  }, []); 
+
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
 
   return (
     <div>

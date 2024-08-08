@@ -10,6 +10,7 @@ router.get('/products', (req, res) => {
 router.get('/products/:id', (req, res) => {
   const productId = parseInt(req.params.id)
   const product = products.find((item) => item._id === productId)
+  console.log("🚀 ~ router.get ~ product:", product)
 
   if (!productId) {
     return res.status(404).json({ message: 'Single product was not found' })
