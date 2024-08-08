@@ -1,12 +1,10 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { FaRegEye } from 'react-icons/fa6'
-import { IoClose } from 'react-icons/io5'
 import { MdOutlineStarOutline } from 'react-icons/md'
 import { useParams } from 'react-router-dom'
 import { ProductProps } from '../../type'
 import { productPayment } from '../assets'
-import { getData } from '../lib'
 import AddToCardBtn from '../ui/AddToCardBtn'
 import CategoryFilters from '../ui/CategoryFilters'
 import Container from '../ui/Container'
@@ -15,47 +13,47 @@ import PriceTag from '../ui/PriceTag'
 import ProductCard from '../ui/ProductCard'
 import Loading from '../ui/Loading'
 import ProductFeatures from '../ui/ProductFeatures'
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 
 const Product = () => {
   const [productData, setProductData] = useState<ProductProps | null>(null)
   const [allProducts, setAllProducts] = useState<ProductProps[]>([])
   const [imgUrl, setImgUrl] = useState('')
-  const [color, setColor] = useState('')
   const [loading, setLoading] = useState(false)
   const { id } = useParams()
 
-  const endpoint = id
-    ? `http://localhost:8000/products/${id}`
-    : 'http://localhost:8000/products/'
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        const data = await getData(endpoint)
-
         if (id) {
-          setProductData(data)
-          setAllProducts([])
+          const productRef = doc(db, 'Products', id)
+          const productSnap = await getDoc(productRef)
+          if (productSnap.exists()) {
+            const product = productSnap.data() as ProductProps
+            setProductData(product)
+            setImgUrl(product?.images[0])
+          } else {
+            console.log('No such product!')
+          }
         } else {
-          setAllProducts(data)
-          setProductData(null)
+          const productsCol = collection(db, 'Products')
+          const productSnapshot = await getDocs(productsCol)
+          const productsList = productSnapshot?.docs.map(doc => ({
+            ...doc.data()
+          })) as ProductProps[]
+          setAllProducts(productsList)
         }
       } catch (error) {
-        console.error('Error fetching data', error)
+        console.error('Error fetching data: ', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
-  }, [id, endpoint])
-
-  useEffect(() => {
-    if (productData) {
-      setImgUrl(productData?.images[0])
-      setColor(productData?.colors[0])
-    }
-  }, [productData])
+    fetchProducts()
+  }, [id])
 
   return (
     <div>
@@ -63,6 +61,7 @@ const Product = () => {
         <Loading />
       ) : (
         <Container>
+
           {!!id && productData && _.isEmpty(allProducts) ? (
             <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
               <div className='flex items-start'>
@@ -72,10 +71,9 @@ const Product = () => {
                       key={item}
                       src={item}
                       alt='img'
-                      className={`w-24 cursor-pointer opacity-80 hover:opacity-100 duration-300 ${
-                        imgUrl === item &&
+                      className={`w-24 cursor-pointer opacity-80 hover:opacity-100 duration-300 ${imgUrl === item &&
                         'border border-gray-500 rounded-sm opacity-100'
-                      }`}
+                        }`}
                       onClick={() => setImgUrl(item)}
                     />
                   ))}
@@ -100,13 +98,13 @@ const Product = () => {
                       <MdOutlineStarOutline />
                       <MdOutlineStarOutline />
                     </div>
-                    <p className='text-base font-semibold'>{`(${productData?.reviews} reviews)`}</p>
+                    <p className='text-base font-semibold'>{`(${productData?.quantity} available)`}</p>
                   </div>
                 </div>
                 <p className='flex items-center'>
                   <FaRegEye className='mr-1' />{' '}
                   <span className='font-semibold mr-1'>
-                    {productData?.reviews}
+                    {productData?.quantity}
                   </span>
                   {'  '}
                   people are viewing this right now
@@ -124,51 +122,18 @@ const Product = () => {
                   upon purchase
                 </p>
                 <div>
-                  {color && (
-                    <p className='mb-1 font-medium px-1'>
-                      Color:{' '}
-                      <span
-                        className='font-semibold capitalize'
-                        style={{ color: color }}
-                      >
-                        {color}
-                      </span>
-                    </p>
-                  )}
-                  <div className='flex items-center gap-x-3'>
-                    {productData?.colors.map((item) => (
-                      <div
-                        key={item}
-                        className={`${
-                          item === color
-                            ? 'border border-black p-1 rounded-full'
-                            : 'border-transparent'
-                        }`}
-                      >
-                        <div
-                          className='w-10 h-10 rounded-full cursor-pointer'
-                          style={{ backgroundColor: item }}
-                          onClick={() => setColor(item)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {color && (
-                    <button
-                      onClick={() => setColor('')}
-                      className='font-semibold mt-1 flex items-center gap-1 hover:text-red-600 duration-200'
-                    >
-                      <IoClose className='mt-1' /> Clear
-                    </button>
-                  )}
+                  <p>
+                    Brand:{' '}
+                    <span className='font-medium'>{productData?.brand}</span>
+                  </p>
+                  <p>
+                    Category:{' '}
+                    <span className='font-medium'>{productData?.category}</span>
+                  </p>
                 </div>
                 <p>
-                  Brand:{' '}
-                  <span className='font-medium'>{productData?.brand}</span>
-                </p>
-                <p>
-                  Category:{' '}
-                  <span className='font-medium'>{productData?.category}</span>
+                  Description:{' '}
+                  <span className='font-medium'>{productData?.description}</span>
                 </p>
 
                 <AddToCardBtn

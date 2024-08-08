@@ -9,6 +9,7 @@ interface Props {
 }
 
 const ProductList = ({ products }: Props) => {
+  console.log("🚀 ~ ProductList ~ products:", products)
   const itemsPerPage = 12;
   return (
     <Container>

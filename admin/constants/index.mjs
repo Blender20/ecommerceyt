@@ -13,6 +13,7 @@ const cat = {
   clearStickers: 'clearStickers', //computersAndLaptop
   dtf: 'dtf', //camerasAndPhotos
 }
+
 export const categories = [
   {
     _id: 1001,
@@ -193,7 +194,7 @@ export const products = [
     isStock: true,
     overView: 'Blutooth Speaker',
     isNew: true,
-    _base: cat?.bussinessCards,
+    _base: cat?.businessCards,
   },
   {
     _id: 2002,

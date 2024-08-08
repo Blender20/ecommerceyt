@@ -7,6 +7,7 @@ import Loading from "../Loading";
 const Login = ({ setLogin }: any) => {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+  
   const handleLogin = async (e: any) => {
     e.preventDefault();
     setLoading(true);

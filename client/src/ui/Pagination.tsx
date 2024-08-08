@@ -17,7 +17,7 @@ function Items({ currentItems }: ItemsProps) {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
       {currentItems &&
         currentItems.map((item: ProductProps) => (
-          <ProductCard key={item._id} item={item} />
+          <ProductCard key={item.id} item={item} />
         ))}
     </div>
   );
